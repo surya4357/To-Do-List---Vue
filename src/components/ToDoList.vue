@@ -17,26 +17,42 @@
         <v-layout row>
           <v-flex xs12 sm6 offset-sm3>
             <v-list>
-              <v-list-tile v-for="task in showList"
+              <div v-for="task in showList"
                 v-bind:key="task.name">
-                <v-list-tile-action>
-                  <v-checkbox
-                    v-model="task.completed"
-                  ></v-checkbox>
-                </v-list-tile-action>
-                <v-list-tile-content>
-                  <div class="flex-display width100">
-                  <v-list-tile-title
-                    v-text="task.name"
-                    class="flex-1"
-                    v-bind:class="{ completed: task.completed }"
-                  ></v-list-tile-title>
-                  <v-btn fab dark small color="primary" v-on:click="removeFromList(task)">
-                    <v-icon dark>clear</v-icon>
-                  </v-btn>
-                  </div>
-                </v-list-tile-content>
-              </v-list-tile>
+                <v-list-tile
+                  v-if="task.id !== activeTaskId"
+                  v-on:dblclick="onEdit(task)">
+                  <v-list-tile-action>
+                    <v-checkbox
+                      v-model="task.completed"
+                    ></v-checkbox>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <div class="flex-display width100">
+                    <v-list-tile-title
+                      v-text="task.name"
+                      class="flex-1"
+                      v-bind:class="{ completed: task.completed }"
+                    ></v-list-tile-title>
+                    <v-btn fab dark small color="primary" v-on:click="removeFromList(task)">
+                      <v-icon dark>clear</v-icon>
+                    </v-btn>
+                    </div>
+                  </v-list-tile-content>
+                </v-list-tile>
+                <v-card v-else>
+                  <v-list-tile >
+                    <v-list-tile-content>
+                        <v-text-field autofocus
+                          v-on:blur="onBlur"
+                          v-model="activeTaskText"
+                          @keyup.esc="onBlur"
+                          @keyup.enter="editTask(task)"
+                        ></v-text-field>
+                    </v-list-tile-content>
+                  </v-list-tile>
+                </v-card>
+              </div>
             </v-list>
           </v-flex>
         </v-layout>
@@ -74,7 +90,9 @@ export default {
       newTask: {},
       todolist: [],
       activeFilter: 'all',
-      filters: ['all', 'completed', 'active']
+      filters: ['all', 'completed', 'active'],
+      activeTaskId: -1,
+      activeTaskText: ""
     }
   },
 
@@ -99,12 +117,28 @@ export default {
         this.newTask = {}
       }
     },
+    editTask: function(task) {
+      var index = this.todolist.findIndex(task => task.id);
+      this.todolist[index].name = this.activeTaskText;
+      this.activeTaskId = -1;
+      this.activeTaskText = "";
+      this.persistList();
+    },
     removeFromList: function(task) {
       this.todolist.splice(task.id, 1);
       this.persistList();
     },
+    onEdit: function(task) {
+      this.activeTaskId = task.id;
+      this.activeTaskText = task.name;
+    },
     filterList: function(filter) {
       this.activeFilter = filter;
+    },
+    onBlur: function(e) {
+      e.preventDefault();
+      this.activeTaskId = -1;
+      this.activeTaskText = "";
     }
   },
 
