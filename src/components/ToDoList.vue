@@ -18,7 +18,7 @@
           <v-flex xs12 sm6 offset-sm3>
             <v-list>
               <div v-for="task in showList"
-                v-bind:key="task.name">
+                v-bind:key="task.id">
                 <v-list-tile
                   v-if="task.id !== activeTaskId"
                   v-on:dblclick="onEdit(task)">
@@ -81,6 +81,7 @@
 </template>
 
 <script>
+import short from 'short-uuid';
 export default {
   name: 'ToDoList',
 
@@ -109,7 +110,7 @@ export default {
       e.preventDefault();
       if (this.newTask.name) {
         this.todolist.push({
-          id: this.todolist.length,
+          id: short.uuid(),
           name: this.newTask.name,
           completed: false
         });
@@ -118,14 +119,15 @@ export default {
       }
     },
     editTask: function(task) {
-      var index = this.todolist.findIndex(task => task.id);
+      var index = this.todolist.findIndex(todo => todo.id === task.id);
       this.todolist[index].name = this.activeTaskText;
       this.activeTaskId = -1;
       this.activeTaskText = "";
       this.persistList();
     },
     removeFromList: function(task) {
-      this.todolist.splice(task.id, 1);
+      var index = this.todolist.findIndex(todo => todo.id === task.id);
+      this.todolist.splice(index, 1);
       this.persistList();
     },
     onEdit: function(task) {
